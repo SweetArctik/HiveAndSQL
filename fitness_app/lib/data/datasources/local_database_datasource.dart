@@ -1,4 +1,3 @@
-import 'package:sqflite/sqflite.dart';
 import '../../core/utils/database_helper.dart';
 import '../../domain/entities/entities.dart';
 
@@ -26,10 +25,7 @@ class LocalDatabaseDataSource {
 
   Future<User?> getFirstUser() async {
     final db = await _dbHelper.database;
-    final maps = await db.query(
-      DatabaseHelper.usersTable,
-      limit: 1,
-    );
+    final maps = await db.query(DatabaseHelper.usersTable, limit: 1);
     if (maps.isNotEmpty) {
       return User.fromMap(maps.first);
     }
@@ -86,7 +82,9 @@ class LocalDatabaseDataSource {
     return maps.map((map) => Exercise.fromMap(map)).toList();
   }
 
-  Future<List<Exercise>> getExercisesByMuscleGroup(MuscleGroup muscleGroup) async {
+  Future<List<Exercise>> getExercisesByMuscleGroup(
+    MuscleGroup muscleGroup,
+  ) async {
     final db = await _dbHelper.database;
     final maps = await db.query(
       DatabaseHelper.exercisesTable,
@@ -96,7 +94,9 @@ class LocalDatabaseDataSource {
     return maps.map((map) => Exercise.fromMap(map)).toList();
   }
 
-  Future<List<Exercise>> getExercisesByDifficulty(DifficultyLevel difficulty) async {
+  Future<List<Exercise>> getExercisesByDifficulty(
+    DifficultyLevel difficulty,
+  ) async {
     final db = await _dbHelper.database;
     final maps = await db.query(
       DatabaseHelper.exercisesTable,
@@ -208,10 +208,15 @@ class LocalDatabaseDataSource {
   // ========== Workout Exercises CRUD ==========
   Future<int> createWorkoutExercise(WorkoutExercise workoutExercise) async {
     final db = await _dbHelper.database;
-    return await db.insert(DatabaseHelper.workoutExercisesTable, workoutExercise.toMap());
+    return await db.insert(
+      DatabaseHelper.workoutExercisesTable,
+      workoutExercise.toMap(),
+    );
   }
 
-  Future<List<WorkoutExercise>> getWorkoutExercisesByWorkoutId(int workoutId) async {
+  Future<List<WorkoutExercise>> getWorkoutExercisesByWorkoutId(
+    int workoutId,
+  ) async {
     final db = await _dbHelper.database;
     final maps = await db.query(
       DatabaseHelper.workoutExercisesTable,
@@ -336,28 +341,28 @@ class LocalDatabaseDataSource {
   // ========== Analytics Methods ==========
   Future<Map<String, dynamic>> getUserStats(int userId) async {
     final db = await _dbHelper.database;
-    
+
     // Total workouts
     final totalWorkoutsResult = await db.rawQuery(
       'SELECT COUNT(*) as count FROM ${DatabaseHelper.workoutsTable} WHERE user_id = ?',
       [userId],
     );
     final totalWorkouts = totalWorkoutsResult.first['count'] as int;
-    
+
     // Total calories burned
     final totalCaloriesResult = await db.rawQuery(
       'SELECT SUM(calorias) as total FROM ${DatabaseHelper.workoutsTable} WHERE user_id = ?',
       [userId],
     );
     final totalCalories = totalCaloriesResult.first['total'] as int? ?? 0;
-    
+
     // Total exercise time
     final totalTimeResult = await db.rawQuery(
       'SELECT SUM(duracion) as total FROM ${DatabaseHelper.workoutsTable} WHERE user_id = ?',
       [userId],
     );
     final totalTime = totalTimeResult.first['total'] as int? ?? 0;
-    
+
     return {
       'total_workouts': totalWorkouts,
       'total_calories': totalCalories,
@@ -369,8 +374,9 @@ class LocalDatabaseDataSource {
     final db = await _dbHelper.database;
     final endDate = DateTime.now();
     final startDate = endDate.subtract(const Duration(days: 7));
-    
-    final result = await db.rawQuery('''
+
+    final result = await db.rawQuery(
+      '''
       SELECT 
         date(fecha) as date,
         COUNT(*) as workouts,
@@ -380,8 +386,10 @@ class LocalDatabaseDataSource {
       WHERE user_id = ? AND fecha BETWEEN ? AND ?
       GROUP BY date(fecha)
       ORDER BY date(fecha)
-    ''', [userId, startDate.toIso8601String(), endDate.toIso8601String()]);
-    
+    ''',
+      [userId, startDate.toIso8601String(), endDate.toIso8601String()],
+    );
+
     return result;
   }
 }

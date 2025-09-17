@@ -1,5 +1,3 @@
-import 'workout_exercise.dart';
-
 class ActiveSession {
   final String sessionId;
   final DateTime inicioSesion;
@@ -49,7 +47,9 @@ class ActiveSession {
   factory ActiveSession.fromMap(Map<String, dynamic> map) {
     return ActiveSession(
       sessionId: map['session_id'] ?? '',
-      inicioSesion: DateTime.parse(map['inicio_sesion'] ?? DateTime.now().toIso8601String()),
+      inicioSesion: DateTime.parse(
+        map['inicio_sesion'] ?? DateTime.now().toIso8601String(),
+      ),
       ejercicios: (map['ejercicios'] as List? ?? [])
           .map((e) => ActiveExercise.fromMap(e))
           .toList(),
@@ -232,7 +232,9 @@ class Serie {
       repeticiones: map['repeticiones'] ?? 0,
       peso: map['peso']?.toDouble(),
       tiempoSegundos: map['tiempo_segundos'],
-      timestamp: DateTime.parse(map['timestamp'] ?? DateTime.now().toIso8601String()),
+      timestamp: DateTime.parse(
+        map['timestamp'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 

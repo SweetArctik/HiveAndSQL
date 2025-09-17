@@ -1,5 +1,4 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 
 class HiveHelper {
   // Box names
@@ -17,13 +16,13 @@ class HiveHelper {
   Future<void> initHive() async {
     // Initialize Hive for Flutter
     await Hive.initFlutter();
-    
+
     // Register type adapters if using code generation
     // For now we'll use simple Map serialization
-    
+
     // Open all boxes
     await _openBoxes();
-    
+
     // Initialize default preferences if they don't exist
     await _initializeDefaultPreferences();
   }
@@ -41,7 +40,7 @@ class HiveHelper {
   // Initialize default user preferences
   Future<void> _initializeDefaultPreferences() async {
     final prefsBox = Hive.box(userPrefsBox);
-    
+
     if (prefsBox.isEmpty) {
       await prefsBox.put('prefs', {
         'tema': 'light',
@@ -61,69 +60,78 @@ class HiveHelper {
 
   // User Preferences methods
   Box get userPreferences => Hive.box(userPrefsBox);
-  
+
   Future<void> saveUserPreferences(Map<String, dynamic> prefs) async {
     await userPreferences.put('prefs', prefs);
   }
-  
+
   Map<String, dynamic> getUserPreferences() {
     return Map<String, dynamic>.from(
-      userPreferences.get('prefs', defaultValue: {
-        'tema': 'light',
-        'recordatorios_activos': true,
-        'horarios_recordatorios': <String>[],
-        'objetivo_calorias': 2000,
-        'objetivo_pasos': 10000,
-        'objetivo_entrenamientos_semana': 3,
-      }),
+      userPreferences.get(
+        'prefs',
+        defaultValue: {
+          'tema': 'light',
+          'recordatorios_activos': true,
+          'horarios_recordatorios': <String>[],
+          'objetivo_calorias': 2000,
+          'objetivo_pasos': 10000,
+          'objetivo_entrenamientos_semana': 3,
+        },
+      ),
     );
   }
 
   // Active Session methods
   Box get activeSession => Hive.box(activeSessionBox);
-  
+
   Future<void> saveActiveSession(Map<String, dynamic> session) async {
     await activeSession.put('current_session', session);
   }
-  
+
   Map<String, dynamic>? getActiveSession() {
     final session = activeSession.get('current_session');
     return session != null ? Map<String, dynamic>.from(session) : null;
   }
-  
+
   Future<void> clearActiveSession() async {
     await activeSession.clear();
   }
-  
+
   bool hasActiveSession() {
     return activeSession.containsKey('current_session');
   }
 
   // Last Filters methods
   Box get lastFilters => Hive.box(lastFiltersBox);
-  
+
   Future<void> saveLastFilters(Map<String, dynamic> filters) async {
     await lastFilters.put('filters', filters);
   }
-  
+
   Map<String, dynamic> getLastFilters() {
     return Map<String, dynamic>.from(
-      lastFilters.get('filters', defaultValue: {
-        'fecha_inicio': null,
-        'fecha_fin': null,
-        'tipo_ejercicio': null,
-        'grupo_muscular': null,
-      }),
+      lastFilters.get(
+        'filters',
+        defaultValue: {
+          'fecha_inicio': null,
+          'fecha_fin': null,
+          'tipo_ejercicio': null,
+          'grupo_muscular': null,
+        },
+      ),
     );
   }
 
   // Quick Cache methods
   Box get quickCache => Hive.box(quickCacheBox);
-  
-  Future<void> saveQuickCache(String key, List<Map<String, dynamic>> data) async {
+
+  Future<void> saveQuickCache(
+    String key,
+    List<Map<String, dynamic>> data,
+  ) async {
     await quickCache.put(key, data);
   }
-  
+
   List<Map<String, dynamic>> getQuickCache(String key) {
     final data = quickCache.get(key);
     if (data is List) {
@@ -131,7 +139,7 @@ class HiveHelper {
     }
     return [];
   }
-  
+
   Future<void> clearQuickCache([String? key]) async {
     if (key != null) {
       await quickCache.delete(key);
@@ -144,15 +152,18 @@ class HiveHelper {
   Future<void> saveTodayStats(Map<String, dynamic> stats) async {
     await quickCache.put('today_stats', stats);
   }
-  
+
   Map<String, dynamic> getTodayStats() {
     return Map<String, dynamic>.from(
-      quickCache.get('today_stats', defaultValue: {
-        'workouts_completed': 0,
-        'calories_burned': 0,
-        'minutes_exercised': 0,
-        'date': DateTime.now().toIso8601String().split('T')[0],
-      }),
+      quickCache.get(
+        'today_stats',
+        defaultValue: {
+          'workouts_completed': 0,
+          'calories_burned': 0,
+          'minutes_exercised': 0,
+          'date': DateTime.now().toIso8601String().split('T')[0],
+        },
+      ),
     );
   }
 
@@ -160,7 +171,7 @@ class HiveHelper {
   Future<void> saveRecentWorkouts(List<Map<String, dynamic>> workouts) async {
     await saveQuickCache('recent_workouts', workouts);
   }
-  
+
   List<Map<String, dynamic>> getRecentWorkouts() {
     return getQuickCache('recent_workouts');
   }
@@ -176,7 +187,7 @@ class HiveHelper {
     await activeSession.clear();
     await lastFilters.clear();
     await quickCache.clear();
-    
+
     // Reinitialize default preferences
     await _initializeDefaultPreferences();
   }
